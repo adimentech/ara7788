@@ -6,7 +6,7 @@ RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/opt/poetry python
     poetry config virtualenvs.create false
 WORKDIR /app
 COPY pyproject.toml poetry.lock* /app/
-RUN poetry install --no-root --only main
+RUN poetry lock --no-update && poetry install --no-root --only main
 ADD . .
 ENTRYPOINT ["uvicorn"]
 CMD ["main:app", "--host", "0.0.0.0"]

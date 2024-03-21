@@ -15,6 +15,19 @@ spec:
       labels:
         app: devops-test
     spec:
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: DoNotSchedule
+        labelSelector:
+          matchLabels:
+            app: devops-test
+        matchLabelKeys:
+        - pod-template-hash
+      initContainers:
+      - name: init-mysql
+        image: busybox:1.28
+        command: ['sh', '-c', "until nslookup mysql.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do echo waiting for mydb; sleep 2; done"]
       containers:
       - image: devops-test
         imagePullPolicy: IfNotPresent
@@ -26,7 +39,7 @@ spec:
                 key: mysql-root-password
                 name: mysql
           - name: NODE_NAME
-            value: "minikube-test"
+            value: "minikube-ara7788"
         ports:
           - containerPort: 8000
             name: http
