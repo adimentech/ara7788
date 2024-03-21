@@ -16,7 +16,31 @@ You need to tag instance during creation - tag key `Name` tag value `your IAM us
 Create an instance from that AMI (you have only console access)
 Use t2.medium type 
 SSH into that instance. In that instance we have Kubernetes cluster provisioned with minikube. It takes some time to start the cluster, so server can refuse connections for few minutes.
-
+```bash
+aws ec2 run-instances \
+    --image-id ami-0a90581127c6c8677 \
+    --count 1 \
+    --instance-type t2.medium \
+    --key-name devops-test \
+    --security-group-ids sg-0d712d9df362c2213 \
+    --subnet-id subnet-ee8aef88 \
+    --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=ara7788}]'
+```
+```bash
+aws ec2 describe-instances --instance-ids i-056dcab9ed0669df8
+```
+```json
+{
+    ...
+    "Tags": [
+        {
+            "Key": "Name",
+            "Value": "ara7788"
+        }
+    ],
+    ...
+}
+```
 You need to build and deploy application (install any tools you need to accomplish that). Use `deploy` folder from repo for deployment.
 Instance would be unavailable after 3 hours, it's ok if not everything was done. 
 Our main goal is to check your basic Docker/Kubernetes knowledge and test your troubleshooting skills.
@@ -33,6 +57,8 @@ Our main goal is to check your basic Docker/Kubernetes knowledge and test your t
 - Deploy application into that cluster (use image you've built)
     <img src="./img/devops_test_deployed.png" alt="Check deployed devops-test" title="devops-test deployed">
 - Application has some issues, we need to troubleshoot and fix it.
+    Kubernetes Servieces for devops-test and mysql for access outside of the cluster need Load balances. For AWS - Aplication Load Balance. The ALB add Public IP for external access. For on-premies servers need add Load balancer with IP Range pool. It could be [MetalLB](https://metallb.github.io/metallb/).
+    For check can be use external tool pods - curl, mysql-client.
     Deployment of the devops test application was successfully completed on 2 out of 3 nodes. One of three nodes of minikube has taint:
     <img src="./img/taint.png" alt="Chech taints of node" title="Chech taints of node">
     To successfully deploy to node 3, you must have rights to patch the node and run the command:
